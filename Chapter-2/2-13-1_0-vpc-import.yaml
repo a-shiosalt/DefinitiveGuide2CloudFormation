@@ -1,0 +1,178 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::LanguageExtensions
+Parameters:
+  myDeletionPolicy:
+    Type: String
+    AllowedValues:
+      - Delete
+      - Retain
+    Default: Retain
+  isImport:
+    Type: String
+    AllowedValues:
+      - Import
+      - 'Not for Import'
+    Default: 'Not for Import'
+    Description: 'Select "Import" When you import resources.'
+Conditions:
+  chkDeletionPolicySelection:
+    Fn::Equals:
+      - Ref: myDeletionPolicy
+      - Delete
+  chkImport:
+    Fn::Equals:
+      - Ref: isImport
+      - 'Not for Import'
+Resources:
+  myVPC:
+    Type: AWS::EC2::VPC
+    DeletionPolicy:
+      Fn::If:
+        - chkDeletionPolicySelection
+        - Delete
+        - Retain
+    UpdateReplacePolicy: Delete
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+    Metadata:
+      MemoDelpolicy:
+        Fn::If:
+          - chkDeletionPolicySelection
+          - Delete
+          - Retain
+  EC2IntGW:
+    Type: AWS::EC2::InternetGateway
+    DeletionPolicy:
+      Fn::If:
+        - chkDeletionPolicySelection
+        - Delete
+        - Retain
+    UpdateReplacePolicy: Delete
+    Properties: {}
+  EC2VPCGWAttch:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Condition: chkImport
+    DeletionPolicy:
+      Fn::If:
+        - chkDeletionPolicySelection
+        - Delete
+        - Retain
+    UpdateReplacePolicy: Delete
+    Properties:
+      VpcId:
+        Ref: myVPC
+      InternetGatewayId:
+        Ref: EC2IntGW
+  SubnetPrivate1:
+    Type: AWS::EC2::Subnet
+    DeletionPolicy:
+      Fn::If:
+        - chkDeletionPolicySelection
+        - Delete
+        - Retain
+    UpdateReplacePolicy: Delete
+    Properties:
+      VpcId:
+        Ref: myVPC
+      CidrBlock: 10.0.0.0/24
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: 
+        !Select [0,!GetAZs '']
+  SubnetPublic1:
+    Type: AWS::EC2::Subnet
+    DeletionPolicy:
+      Fn::If:
+        - chkDeletionPolicySelection
+        - Delete
+        - Retain
+    UpdateReplacePolicy: Delete
+    Properties:
+      VpcId:
+        Ref: myVPC
+      CidrBlock: 10.0.200.0/24
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: 
+        !Select [0,!GetAZs '']
+  RouteNATGW:
+    Type: AWS::EC2::Route
+    DeletionPolicy:
+      Fn::If:
+        - chkDeletionPolicySelection
+        - Delete
+        - Retain
+    UpdateReplacePolicy: Delete
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      RouteTableId:
+        Ref: RTPrivate
+      GatewayId:
+        Ref: EC2IntGW
+  RTPrivate:
+    Type: AWS::EC2::RouteTable
+    DeletionPolicy:
+      Fn::If:
+        - chkDeletionPolicySelection
+        - Delete
+        - Retain
+    UpdateReplacePolicy: Delete
+    Properties:
+      VpcId:
+        Ref: myVPC
+    DependsOn:
+      - SubnetPrivate1
+  EC2SntRTAS1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    DeletionPolicy:
+      Fn::If:
+        - chkDeletionPolicySelection
+        - Delete
+        - Retain
+    UpdateReplacePolicy: Delete
+    Properties:
+      RouteTableId:
+        Ref: RTPrivate
+      SubnetId:
+        Ref: SubnetPrivate1
+  EC2SntRTAS2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    DeletionPolicy:
+      Fn::If:
+        - chkDeletionPolicySelection
+        - Delete
+        - Retain
+    UpdateReplacePolicy: Delete
+    Properties:
+      RouteTableId:
+        Ref: RTPublic
+      SubnetId:
+        Ref: SubnetPublic1
+  RouteIGW:
+    Type: AWS::EC2::Route
+    DeletionPolicy:
+      Fn::If:
+        - chkDeletionPolicySelection
+        - Delete
+        - Retain
+    UpdateReplacePolicy: Delete
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: EC2IntGW
+      RouteTableId:
+        Ref: RTPublic
+  RTPublic:
+    Type: AWS::EC2::RouteTable
+    DeletionPolicy:
+      Fn::If:
+        - chkDeletionPolicySelection
+        - Delete
+        - Retain
+    UpdateReplacePolicy: Delete
+    Properties:
+      VpcId:
+        Ref: myVPC
+    DependsOn:
+      - SubnetPublic1
+

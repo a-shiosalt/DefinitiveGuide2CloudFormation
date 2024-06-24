@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: In this template file, all DeletionPolicy attributes are set to Delete. If you want to delete the stack created with autoscaling.yaml, please update the stack with this template first.
+Parameters:
+  LatestAmiId:
+    Description: Region specific image from the Parameter Store
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+  InstanceType:
+    Description: Amazon EC2 instance type for the instances
+    Type: String
+    AllowedValues:
+      - t3.micro
+      - t3.small
+      - t3.medium
+    Default: t3.micro
+  Subnets:
+    Type: List<AWS::EC2::Subnet::Id>
+    AllowedPattern: "[a-zA-Z0-9-_,]+"
+    ConstraintDescription: "need selected one or more."
+  SecurityGrps:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    AllowedPattern: "[a-zA-Z0-9-_,]+"
+    ConstraintDescription: "need selected one or more."
+Resources:
+  myKeyPair:
+    Type: AWS::EC2::KeyPair
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+         KeyName: !Sub 'keypair-${AWS::StackName}'
+  myAppLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LaunchTemplateName: !Sub ${AWS::StackName}-launch-template
+      LaunchTemplateData:
+        ImageId: !Ref LatestAmiId
+        InstanceType: !Ref InstanceType
+        KeyName: !Ref myKeyPair
+        SecurityGroupIds: !Ref SecurityGrps
+  myASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId: !Ref myAppLaunchTemplate
+        Version: !GetAtt myAppLaunchTemplate.DefaultVersionNumber
+      MaxSize: '10'
+      MinSize: '1'
+      VPCZoneIdentifier: !Ref Subnets
+      LifecycleHookSpecificationList:
+        - LifecycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING
+          LifecycleHookName: myLaunchLifecycleHook
+          DefaultResult: CONTINUE
+          HeartbeatTimeout: '60'
+  myTerminationLifecycleHook:
+    Type: AWS::AutoScaling::LifecycleHook
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      AutoScalingGroupName: !Ref myASG
+      LifecycleTransition: autoscaling:EC2_INSTANCE_TERMINATING
+      HeartbeatTimeout: '300'
+      DefaultResult: CONTINUE
+      NotificationTargetARN: !GetAtt mySQS.Arn
+      RoleARN: !GetAtt notificationRole.Arn
+      NotificationMetadata: optional metadata
+  notificationRole:
+    Type: AWS::IAM::Role
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-autoscale-notification-role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - autoscaling.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AutoScalingNotificationAccessRole
+  mySQS:
+    Type: AWS::SQS::Queue
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete

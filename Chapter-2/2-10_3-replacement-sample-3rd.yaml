@@ -1,0 +1,6 @@
+Resources:
+  myS3Bucket1:
+    Type: AWS::S3::Bucket
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub 'change-bucket-name-3-${AWS::AccountId}'

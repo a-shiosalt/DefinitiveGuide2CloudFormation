@@ -1,0 +1,45 @@
+[
+    {
+        "LogicalResourceId": "myASG",
+        "ResourceType": "AWS::AutoScaling::AutoScalingGroup",
+        "ResourceIdentifier": {
+            "AutoScalingGroupName": "import-sample-myASG-WDR2J17T9W7T"
+        }
+    },
+    {
+        "LogicalResourceId": "myAppLaunchTemplate",
+        "ResourceType": "AWS::EC2::LaunchTemplate",
+        "ResourceIdentifier": {
+            "LaunchTemplateId": "lt-0975b97788509a590"
+        }
+    },
+    {
+        "LogicalResourceId": "myKeyPair",
+        "ResourceType": "AWS::EC2::KeyPair",
+        "ResourceIdentifier": {
+            "KeyName": "keypair-import-sample"
+        }
+    },
+    {
+        "LogicalResourceId": "mySQS",
+        "ResourceType": "AWS::SQS::Queue",
+        "ResourceIdentifier": {
+            "QueueUrl": "https://sqs.ap-northeast-1.amazonaws.com/123456789012/import-sample-mySQS-LmZehi32Xdpe"
+        }
+    },
+    {
+        "LogicalResourceId": "myTerminationLifecycleHook",
+        "ResourceType": "AWS::AutoScaling::LifecycleHook",
+        "ResourceIdentifier": {
+            "AutoScalingGroupName": "import-sample-myASG-WDR2J17T9W7T",
+            "LifecycleHookName": "import-sample-myTerminationLifecycleHook-6RzXHx2y8Gcs"
+        }
+    },
+    {
+        "LogicalResourceId": "notificationRole",
+        "ResourceType": "AWS::IAM::Role",
+        "ResourceIdentifier": {
+            "RoleName": "import-sample-autoscale-notification-role"
+        }
+    }
+]

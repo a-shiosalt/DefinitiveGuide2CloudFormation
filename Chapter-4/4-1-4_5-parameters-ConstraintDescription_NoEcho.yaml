@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  DBUsername:
+    NoEcho: true
+    Description: Username for MySQL database access
+    Type: String
+    MinLength: 1
+    MaxLength: 16
+    AllowedPattern: ^[a-zA-Z][a-zA-Z0-9]*$
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+    Default: masteruser
+  myPortNum:
+    Type: Number
+    Default: 3306
+    MinValue: 1024
+    MaxValue: 65535
+  DBSubnets:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: MySQL Connected Subnets. select 2 or more in a same vpc.
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: VPC Security Groups from where you can access to MySQL DB.
+    MinLength: 1
+    ConstraintDescription: select a Security Group
+  myVPC:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID
+Resources:
+  myDB:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Metadata:
+      See: https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/quickref-rds.html
+    Properties:
+      Engine: MySQL
+      AllocatedStorage: '5'
+      DBInstanceClass: db.t3.micro
+      Port: !Ref myPortNum
+      MasterUsername: !Ref DBUsername
+      ManageMasterUserPassword: true
+      MasterUserSecret:
+        KmsKeyId:
+          Ref: myKMSKey
+      VPCSecurityGroups:
+        - !Ref myEC2SecurityGroup4DB
+      DBSubnetGroupName:
+        !Ref myDBSubnetGroup
+      BackupRetentionPeriod: 31
+  myKMSKey:
+    Type: 'AWS::KMS::Key'
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      Description: KMS for mySQL
+      EnableKeyRotation: True
+      KeyPolicy:
+        Version: "2012-10-17"
+        Id: !Ref "AWS::StackName"
+        Statement:
+          - Sid: "Allow administration of the key"
+            Effect: "Allow"
+            Principal:
+              AWS:
+                Fn::Sub: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:root'
+            Action:
+              - "kms:*"
+            Resource: "*"
+  myEC2SecurityGroup4DB:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Open database for access
+      VpcId: !Ref myVPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: !Ref myPortNum
+        ToPort: !Ref myPortNum
+        SourceSecurityGroupId:
+          Ref: WebServerSecurityGroup
+  myDBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties: 
+      DBSubnetGroupDescription: !Sub created in cfn ${AWS::StackName}
+      SubnetIds: 
+        Ref: DBSubnets

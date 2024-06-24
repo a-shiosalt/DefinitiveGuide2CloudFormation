@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  S3Bucket2:
+    Type: AWS::S3::Bucket
+    Properties:
+      LoggingConfiguration:
+        DestinationBucketName:
+          Fn::ImportValue: S3LogBucket
+        LogFilePrefix: test-log/
+Outputs:
+  OutputS3Bucket2:
+    Value:
+      Ref: S3Bucket2

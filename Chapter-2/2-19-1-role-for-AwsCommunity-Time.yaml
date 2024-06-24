@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: |-
+  https://docs.aws.amazon.com/console/cloudformation/extensions-role
+  https://github.com/aws-cloudformation/community-registry-extensions
+Resources:
+  sampleRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: 
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: resources.cloudformation.amazonaws.com
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Sub '${AWS::AccountId}'
+              StringLike:
+                aws:SourceArn: !Sub 'arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:type/resource/AwsCommunity-Time-*'
+      ManagedPolicyArns:
+        - !Ref samplePolicy
+  samplePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: Statement1
+            Effect: Allow
+            Action:
+              - ssm:PutParameter
+              - ssm:GetParameter
+              - ssm:DeleteParameter
+            Resource:
+              - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
+Outputs:
+  AwsCommunityTimeStaticRole:
+    Value: !GetAtt sampleRole.Arn

@@ -1,0 +1,21 @@
+Parameters:
+  LatestAmiId:
+    Description: Region specific image from the Parameter Store
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+  InstanceType:
+    Description: Amazon EC2 instance type for the instances
+    Type: String
+    AllowedValues:
+      - t3.micro
+      - t3.small
+      - t3.medium
+    Default: t3.micro
+  Subnets:
+    Type: List<AWS::EC2::Subnet::Id>
+    AllowedPattern: '[a-zA-Z0-9-_,]+'
+    ConstraintDescription: 'need selected one or more.'
+  SecurityGrps:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    AllowedPattern: '[a-zA-Z0-9-_,]+'
+    ConstraintDescription: 'need selected one or more.'

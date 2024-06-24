@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+    AdminRoleName:
+      Type: String
+      Default: AWSCloudFormationStackSetAdministrationRole
+      Description: StackSet Admin Role Name you will create now.
+    ExecRemoteRoleName:
+      Type: String
+      Default: AWSCloudFormationStackSetExecutionRole
+      Description: Remote Role Name.
+Resources:
+  AdminRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Ref 'AdminRoleName'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudformation.amazonaws.com
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref 'AWS::AccountId'
+              StringLike:
+                aws:SourceArn: !Sub 'arn:aws:cloudformation:*:${AWS::AccountId}:stackset/*'
+      Path: /
+      Policies:
+        - PolicyName: CFNStackSetAdminRolePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - sts:AssumeRole
+                Resource:
+                  - !Sub 'arn:aws:iam::*:role/${ExecRemoteRoleName}'
+                Effect: Allow

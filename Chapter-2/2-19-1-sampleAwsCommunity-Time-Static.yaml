@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+ prefixName:
+  Type: String
+  Default: mybucket
+Resources:
+  myTymeStatic:
+    Type: AwsCommunity::Time::Static
+    Metadata:
+      comment1: E3001 Invalid or unsupported Type
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3001
+  myS3:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${prefixName}-${myTymeStatic.Year}-${myTymeStatic.Month}-${myTymeStatic.Day}-${myTymeStatic.Id}"
+    Metadata:
+      cfn-lint:
+        comment1: E1019 Parameter not found 
+        config:
+          ignore_checks:
+            - E1019
+

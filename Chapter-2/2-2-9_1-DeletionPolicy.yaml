@@ -1,0 +1,13 @@
+Resources:
+  EC2sample1:
+    Type: 'AWS::EC2::Instance'
+    DeletionPolicy: Retain
+    Properties:
+      ImageId: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2}}'
+      InstanceType: t3.nano
+      Tags:
+        - Key: Name
+          Value: EC2sample1
+        - Key: Info
+          Value: DeletionPolicy Retain
+

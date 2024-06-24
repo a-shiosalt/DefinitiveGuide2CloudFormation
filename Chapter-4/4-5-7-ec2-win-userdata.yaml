@@ -1,0 +1,117 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  EC2ImageId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-windows-latest/Windows_Server-2022-Japanese-Full-Base
+  S3bucket:
+    Type: String
+  S3File:
+    Type: String
+  localFile:
+    Type: String
+    Default: "sample.txt"
+  EC2InstanceType:
+    Type: String
+    Default: t3a.small
+    AllowedValues:
+         - t3a.small
+         - t3.small
+         - t3.micro
+         - t3.nano
+Resources:
+  myNewKeyPair:
+    Metadata:
+      Comment1: 'new keypaire is stored in SSM parameter store /ec2/keypair/{key_pair_id}'
+    Type: 'AWS::EC2::KeyPair'
+    Properties:
+      KeyName: !Sub "KeyPair-${AWS::StackName}"
+  myEC2I01:
+    Type: AWS::EC2::Instance
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT15M
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId: !Ref myLaunchTemplate
+        Version: !GetAtt myLaunchTemplate.LatestVersionNumber
+      UserData: !Base64
+        Fn::Sub: |
+          version: 1.1
+          tasks:
+          - task: executeScript
+            inputs:
+            - frequency: always
+              type: powershell
+              runAs: localSystem
+              content: |-
+                $file = $env:SystemRoot + "\Temp\" + (Get-Date).ToString("MM-dd-yy-hh-mm")
+                New-Item $file -ItemType file
+            - frequency: once
+              type: powershell
+              runAs: localSystem
+              content: |-
+                Set-Location -Path ($env:SystemRoot + "\Temp\")
+                if("${S3bucket}".Length -gt 0){
+                  Copy-S3Object -BucketName "${S3bucket}" -Key `
+                    "${S3File}" -LocalFile "$env:SystemRoot\Temp\${localFile}"
+                }
+                if($?){
+                  cfn-signal -s true --stack ${AWS::StackName} `
+                   --resource myEC2I01 `
+                    --region ${AWS::Region}
+                }else{
+                  cfn-signal -s false --stack ${AWS::StackName} `
+                  --resource myEC2I01 `
+                  --region ${AWS::Region}
+                }
+
+
+
+  myLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Metadata:
+      Comment1: HttpTokens for IMDSv2
+    Properties:
+      LaunchTemplateData:
+        KeyName: !Ref myNewKeyPair
+        IamInstanceProfile:
+          Arn: !GetAtt
+            - MyInstanceProfile
+            - Arn
+        ImageId: !Ref EC2ImageId
+        InstanceType: !Ref EC2InstanceType
+        MetadataOptions: 
+          HttpTokens: required
+
+  MyInstanceProfile: 
+    Type: "AWS::IAM::InstanceProfile"
+    Properties: 
+      Path: "/"
+      Roles: 
+        - Ref: "MyRole"
+  MyRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Policies:
+        - PolicyName: s3read
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:Get*
+                  - s3:List*
+                  - s3:Describe*
+                Resource: '*'

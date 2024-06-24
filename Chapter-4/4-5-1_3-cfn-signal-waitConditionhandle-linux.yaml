@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  EC2ImageId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+Resources:
+  myWaitHandle:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  myWaitCondition:
+    Type: AWS::CloudFormation::WaitCondition
+    DependsOn: myAutoScalingGroup
+    Properties:
+      Handle: !Ref myWaitHandle
+      Timeout: '900'
+      Count: 2
+  myAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones: !GetAZs ''
+      LaunchConfigurationName: !Ref myLaunchConfig
+      DesiredCapacity: '2'
+      MinSize: '1'
+      MaxSize: '3'
+
+  myLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref EC2ImageId
+      InstanceType: t3.micro
+      UserData:
+        Fn::Base64: 
+          !Sub |
+            #!/bin/bash -xe
+            yum update -y aws-cfn-bootstrap
+            /opt/aws/bin/cfn-signal -d "sample data1" "${myWaitHandle}"
+
+  myWaitHandle2:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  myWaitCondition2:
+    Type: AWS::CloudFormation::WaitCondition
+    DependsOn: myEC2
+    Properties:
+      Handle: !Ref myWaitHandle2
+      Timeout: '900'
+  myEC2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref EC2ImageId
+      InstanceType: t3.micro
+      Tags:
+        - Key: Name
+          Value: !Sub "myEC2-${AWS::StackName}"
+      UserData:
+        Fn::Base64: 
+          !Sub |
+            #!/bin/bash -x
+            /opt/aws/bin/cfn-signal -d "sample data2" "${myWaitHandle2}"
+
+Outputs:
+  myData: 
+    Value: !GetAtt myWaitCondition.Data
+  myData2: 
+    Value: !GetAtt myWaitCondition2.Data

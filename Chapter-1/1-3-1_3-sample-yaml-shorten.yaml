@@ -1,0 +1,7 @@
+Resources:
+  myBucket1:
+    Type: 'AWS::S3::Bucket'
+  myBucket2:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'hello-cloudformation-${AWS::AccountId}'

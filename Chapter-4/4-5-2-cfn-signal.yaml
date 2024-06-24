@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  EC2ImageId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+Resources:
+  myEC2I01:
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets: 
+          order1: 
+            - config1
+            - config2
+            - config3
+          order2: 
+            - config2
+        config1:
+          commands: 
+            cmd1:
+              command: "echo \"$TEST\" >> /var/log/test.txt"
+              env: 
+                TEST: "hello"
+              cwd: "~"
+              ignoreErrors: true
+        config2:
+          packages: 
+            yum:
+              nginx: []
+          services:
+            systemd:
+              nginx.service:
+                enabled: true
+                ensureRunning: true
+        config3:
+          files: 
+            "/usr/share/nginx/html/index.html":
+              encoding: plain
+              content: !Sub |
+                <HTML><HEAD> Hello </HEAD><BODY>this is a sample page of ${AWS::StackName}</BODY></HTML>
+              mode: "000644"
+              owner: "root"
+              group: "root"
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT3M
+    Properties:
+      ImageId: !Ref 'EC2ImageId'
+      InstanceType: t3.nano
+      UserData: !Base64
+        Fn::Sub: |
+         #!/bin/bash
+         cfn-init \
+          -c order1 \
+          --stack ${AWS::StackName} \
+          --resource myEC2I01 \
+          --region ${AWS::Region} \
+          -v
+         /opt/aws/bin/cfn-signal -e $? \
+          --stack ${AWS::StackName} \
+          --resource myEC2I01 \
+          --region ${AWS::Region}
+  myEC2I02:
+    Type: AWS::EC2::Instance
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT3M
+    Properties:
+      ImageId: !Ref 'EC2ImageId'
+      InstanceType: t3.nano
+      UserData: !Base64
+        Fn::Sub: |
+         #!/bin/bash
+         cfn-init \
+          -c order2 \
+          --stack ${AWS::StackName} \
+          --resource myEC2I01 \
+          --region ${AWS::Region} \
+          -v
+         /opt/aws/bin/cfn-signal -e $? \
+          --stack ${AWS::StackName} \
+          --resource myEC2I02 \
+          --region ${AWS::Region}

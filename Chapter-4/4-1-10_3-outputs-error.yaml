@@ -1,0 +1,30 @@
+Parameters:
+  myParameter:
+    Type: String
+Resources:
+  myS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties: {}
+  myVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.16.0.0/16
+Outputs:
+  OK1ExportBucket:
+    Value: !Ref 'myS3Bucket'
+    Export:
+      Name: !Sub 'S3LogBucket-${AWS::StackName}'
+  OK2ExportBucket:
+    Value: !Ref 'myS3Bucket'
+    Export:
+      Name: !Sub 'S3LogBucket-${myParameter}'
+  ErrorExportBucket:
+    Value: !Sub '${myVPC.CidrBlock}'
+    Export:
+      Name: !Sub 'VPC-${myVPC.VpcId}'  #NG
+  ErrorExportAZ:
+    Value: !Select [0, Fn::GetAZs: ""]
+#   Export:
+#      Name: !Select [0, Fn::GetAZs: ""]  # NG
+
+

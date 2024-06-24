@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: sample template
+Metadata:
+  comment1: this is metadata section sample
+  comment2:
+    date: '2022-12-01'
+    toDo:
+      - VPCstack
+      - EC2stack
+Resources:
+  myS3Bucket1:
+    Type: AWS::S3::Bucket

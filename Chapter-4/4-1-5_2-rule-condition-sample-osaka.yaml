@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  EC2InstanceType:
+    Type: String
+    AllowedValues:
+      - t3.micro
+      - t3.small
+      - m5.large
+      - m5a.large
+      - m5a.xlarge
+  EC2ImageId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+Rules:
+  chkEC2InstanceType:
+    RuleCondition: !Equals
+      - !Ref AWS::Region
+      - "ap-northeast-3"
+    Assertions:
+      - Assert: !Not
+        - !Contains
+          - - m5a.large
+            - m5a.xlarge
+          - !Ref 'EC2InstanceType'
+        AssertDescription: "in osaka Region, m5a.x series are not supported"
+Resources:
+  myEC2:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref 'EC2InstanceType'
+      ImageId: !Ref 'EC2ImageId'
+Outputs:
+  name1:
+    Value: !Ref EC2ImageId
+
+  name2:
+    Value: 
+      Ref:  EC2ImageId
+  name3:
+    Value:
+      !GetAtt myEC2.AvailabilityZone

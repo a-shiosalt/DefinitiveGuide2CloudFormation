@@ -1,0 +1,89 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  myVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      Tags:
+        - Key: stack
+          Value: production
+  EC2IntGW:
+    Type: AWS::EC2::InternetGateway
+    Properties: {}
+  EC2VPCGU9JE:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: myVPC
+      InternetGatewayId:
+        Ref: EC2IntGW
+  SubnetPrivate1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: myVPC
+      CidrBlock: 10.0.0.0/24
+      MapPublicIpOnLaunch: false
+  SubnetPublic1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: myVPC
+      CidrBlock: 10.0.200.0/24
+      MapPublicIpOnLaunch: true
+  RouteNATGW:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      RouteTableId:
+        Ref: RTPrivate
+      GatewayId:
+        Ref: EC2IntGW
+  RTPrivate:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: myVPC
+    DependsOn:
+      - SubnetPrivate1
+  EC2SntRTAS1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: RTPrivate
+      SubnetId:
+        Ref: SubnetPrivate1
+  EC2SntRTAS2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: RTPublic
+      SubnetId:
+        Ref: SubnetPublic1
+  RouteIGW:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: EC2IntGW
+      RouteTableId:
+        Ref: RTPublic
+  RTPublic:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: myVPC
+    DependsOn:
+      - SubnetPublic1
+Outputs:
+  outVPC:
+    Value:
+      Ref: myVPC
+  outSubnetPrivate1Id:
+    Value:
+      Ref: SubnetPrivate1
+  outSubnetPublic1Id:
+    Value:
+      Ref: SubnetPublic1

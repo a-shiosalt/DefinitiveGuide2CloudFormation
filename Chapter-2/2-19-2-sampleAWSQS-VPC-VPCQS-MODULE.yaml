@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  MyModule:
+    Type: AWSQS::VPC::VPCQS::MODULE
+    Properties:
+      AvailabilityZones: 
+        - ap-northeast-1a
+        - ap-northeast-1c
+      CreateAdditionalPrivateSubnets: false
+      CreateNATGateways: true
+      CreatePublicSubnets: true
+      CreatePrivateSubnets: true
+      CreateVPCFlowLogsToCloudWatch: true
+      NumberOfAZs: 2
+      PrivateSubnet1ACIDR: 10.16.101.0/24
+      PrivateSubnet1BCIDR: 10.16.111.0/24
+      PrivateSubnet2ACIDR: 10.16.102.0/24
+      PrivateSubnet2BCIDR: 10.16.112.0/24
+      PrivateSubnet3ACIDR: 10.16.103.0/24
+      PrivateSubnet3BCIDR: 10.16.113.0/24
+      PrivateSubnet4ACIDR: 10.16.104.0/24
+      PrivateSubnet5BCIDR: 10.16.114.0/24
+      PrivateSubnetATag1: INFO=Private-A-1
+      PrivateSubnetATag2: INFO=Private-A-2
+      PrivateSubnetATag3: INFO=Private-A-3
+      PrivateSubnetBTag1: INFO=Private-B-1
+      PrivateSubnetBTag2: INFO=Private-B-2
+      PrivateSubnetBTag3: INFO=Private-B-3
+      PublicSubnet1CIDR: 10.16.1.0/24
+      PublicSubnet2CIDR: 10.16.2.0/24
+      PublicSubnet3CIDR: 10.16.3.0/24
+      PublicSubnet4CIDR: 10.16.4.0/24
+      PublicSubnetTag1: INFO=Public-1
+      PublicSubnetTag2: INFO=Public-2
+      PublicSubnetTag3: INFO=Public-3
+      VPCCIDR: 10.16.0.0/16

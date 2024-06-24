@@ -1,0 +1,10 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  mySsmParam01:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: PP-Project-AMI-x86_64
+      Type: String
+      DataType: 'aws:ec2:image'
+      Tier: Standard
+      Value: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}'

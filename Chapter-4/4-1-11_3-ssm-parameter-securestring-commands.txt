@@ -1,0 +1,19 @@
+$ aws ssm put-parameter --name PP-Project-PWD \
+  --type SecureString \
+  --value password-test
+{
+    "Version": 1,
+    "Tier": "Standard"
+}
+$ aws ssm get-parameter --name PP-Project-PWD  --with-decryption
+{
+    "Parameter": {
+        "Name": "PP-Project-PWD",
+        "Type": "SecureString",
+        "Value": "password-test",
+        "Version": 1,
+        "LastModifiedDate": "2024-02-12T13:35:31.997000+00:00",
+        "ARN": "arn:aws:ssm:ap-northeast-1:123456789012:parameter/PP-Project-PWD",
+        "DataType": "text"
+    }
+}

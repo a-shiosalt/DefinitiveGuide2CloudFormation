@@ -1,0 +1,23 @@
+Parameters:
+  myFromPort:
+    Type: String
+  myToPort:
+    Type: Number
+  myVPC:
+    Type: AWS::EC2::VPC::Id
+Resources:
+  InstanceSecurityGroup1:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Allow ports to client host
+      VpcId: !Ref myVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref myFromPort
+          ToPort: !Ref myToPort
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: '0'
+          CidrIp: 0.0.0.0/0

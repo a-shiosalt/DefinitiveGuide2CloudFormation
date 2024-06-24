@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: run this templates in member account.
+Parameters:
+    AdminAWSAccountId:
+      Type: String
+      MinLength: 12
+      MaxLength: 12
+      Description: AWS Account ID
+    AdminRemoteRoleName:
+      Type: String
+      Default: AWSCloudFormationStackSetAdministrationRole
+      Description: >
+        Admin Role Name on remote [AdminAWSAccountId].It must exist already
+    ExecRoleName:
+      Type: String
+      Default: AWSCloudFormationStackSetExecutionRole
+      Description: Local Role Name you will create now.
+Resources:
+  ExecRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Ref 'ExecRoleName'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: 
+              AWS: !Sub 'arn:aws:iam::${AdminAWSAccountId}:role/${AdminRemoteRoleName}'
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: CFNStackSetExecPolicy
+          PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - 'cloudformation:*'
+                    - 's3:*'
+                  Resource: '*'

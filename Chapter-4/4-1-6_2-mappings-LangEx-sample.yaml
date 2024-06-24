@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::LanguageExtensions
+Parameters:
+  myEnv:
+    Type: String
+    AllowedValues: [sndbox,dev,stage,prod]
+Mappings:
+  EnvToIds:
+    sndbox:
+      sId: subnet-012345abc
+      amiId: ami-aa123456
+      iType: t3.nano
+    dev:
+      sId: subnet-012345000
+      amiId: ami-aa123456
+      iType: t3.nano
+    stage:
+      sId: subnet-012345012
+      amiId: ami-ac123456
+      iType: t3.small
+    prod: 
+      sId: subnet-012345999
+      amiId: ami-ad123456
+      iType: t3.large
+  UDPolicy:
+    prod:
+      policy: Retain
+Resources:
+  myInstance:
+    Type: AWS::EC2::Instance
+    UpdateReplacePolicy: !FindInMap
+      - UDPolicy
+      - !Ref myEnv
+      - policy
+      - DefaultValue: Delete
+    DeletionPolicy: !FindInMap [UDPolicy,!Ref myEnv,policy,{DefaultValue: Delete}]
+    Properties:
+      SubnetId: !FindInMap
+        - EnvToIds
+        - !Ref myEnv
+        - sId
+      ImageId: !FindInMap
+        - EnvToIds
+        - !Ref myEnv
+        - amiId
+      InstanceType: !FindInMap
+        - EnvToIds
+        - !Ref myEnv
+        - iType

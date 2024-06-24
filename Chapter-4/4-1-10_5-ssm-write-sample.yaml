@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  mySsmParam01:
+    Type: AWS::SSM::Parameter
+    DeletionPolicy: RetainExceptOnCreate
+    Properties:
+      Name: /cfn/ABCProj/LogBucket
+      Type: String
+      Tier: Standard
+      Value: !Ref myS3log
+      Description: ABC Project log bucket
+  myS3log:
+    Type: AWS::S3::Bucket

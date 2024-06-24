@@ -1,0 +1,44 @@
+Parameters:
+  myImageId:
+    Type: AWS::EC2::Image::Id
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+  myPublicSubnet:
+    Type: AWS::EC2::Subnet::Id
+  mySecurityGs4Public:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.16.0.0/16
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  GatewayToInternet:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: VPC
+      InternetGatewayId:
+        Ref: InternetGateway
+  EC2Key:
+    Type: AWS::EC2::KeyPair
+    Properties:
+      KeyName: !Ref AWS::StackName
+      KeyType: rsa
+  EC2Host:
+    Type: AWS::EC2::Instance
+    DependsOn: GatewayToInternet
+    Properties:
+      InstanceType: t3.micro
+      KeyName:
+        Ref: EC2Key
+      ImageId:
+        Ref: myImageId
+      NetworkInterfaces:
+      - GroupSet:
+          Ref: mySecurityGs4Public
+        AssociatePublicIpAddress: 'true'
+        DeviceIndex: '0'
+        DeleteOnTermination: 'true'
+        SubnetId:
+          Ref: myPublicSubnet

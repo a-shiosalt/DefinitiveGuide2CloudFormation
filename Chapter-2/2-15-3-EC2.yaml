@@ -1,0 +1,40 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+      "Parameters": {
+          "EC2ImageId": {
+              "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
+              "Default": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+          },
+          "EC2InstanceType": {
+              "Type": "String",
+              "Default": "t3.nano",
+              "AllowedValues": ["t3.nano","t3.micro","t3.small","t3.medium"]
+          },
+          "EC2SubnetId": {
+              "Type": "AWS::EC2::Subnet::Id"
+          },
+          "EC2SecurityGroupIds": {
+              "Type": "List<AWS::EC2::SecurityGroup::Id>"
+          }
+      },
+      "Resources": {
+          "Instance": {
+              "Type": "AWS::EC2::Instance",
+              "Properties": {
+                  "ImageId": {
+                      "Ref": "EC2ImageId"
+                  },
+                  "InstanceType": {
+                      "Ref": "EC2InstanceType"
+                  },
+                  "SubnetId": {
+                      "Ref": "EC2SubnetId"
+                  },
+                  "SecurityGroupIds": {
+                      "Ref": "EC2SecurityGroupIds"
+                  }
+              }
+          }
+      }
+  }
+  

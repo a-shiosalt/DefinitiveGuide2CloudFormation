@@ -1,0 +1,73 @@
+Parameters:
+  mySecurityGroups:
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+    Description: SecurityGroups for Endpoints.all must in same VPC
+    Default: sg-0a611df32627ede5a
+  myVPC:
+    Type: 'AWS::EC2::VPC::Id'
+    Description: VPC Id
+    Default: vpc-027d9391c06e05755
+  S3Interface:
+    Type: String
+    Description: >
+      make S3 gateway Interface
+    AllowedValues:
+      - Yes
+      - No
+    Default: Yes
+  S3InterfaceRouteTable:
+    Type: String
+    Default: rtb-0ffd23f96afd0915c
+Resources:
+  S3GWInterfaceEndpoint:
+    Type: 'AWS::EC2::VPCEndpoint'
+    Metadata:
+      Comment1: update info
+    Condition: CreateS3GWInterface
+    Properties:
+      VpcEndpointType: Gateway
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.s3
+      VpcId: !Ref myVPC
+      RouteTableIds:
+        - !Ref S3InterfaceRouteTable
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: allowCfnWaitCondition
+            Effect: Allow
+            Principal: '*'
+            Action:
+              - 's3:*'
+            Resource:
+              - !Sub 'arn:aws:s3:::cloudformation-waitcondition-${AWS::Region}'
+          - Sid: AllowSsm
+            Effect: Allow
+            Principal: '*'
+            Action:
+              - 's3:GetObject'
+            Resource:
+              - !Sub 'arn:aws:s3:::aws-ssm-${AWS::Region}/*'
+              - !Sub 'arn:aws:s3:::aws-windows-downloads-${AWS::Region}/*'
+              - !Sub 'arn:aws:s3:::amazon-ssm-${AWS::Region}/*'
+              - !Sub 'arn:aws:s3:::amazon-ssm-packages-${AWS::Region}/*'
+              - !Sub 'arn:aws:s3:::${AWS::Region}-birdwatcher-prod/*'
+              - !Sub 'arn:aws:s3:::aws-ssm-distributor-file-${AWS::Region}/*'
+              - !Sub 'arn:aws:s3:::aws-ssm-document-attachments-${AWS::Region}/*'
+              - !Sub 'arn:aws:s3:::patch-baseline-snapshot-${AWS::Region}/*'
+              - !Sub 'aws-patchmanager-macos-${AWS::Region}/*'
+              - !Sub 'cloudformation-waitcondition-${AWS::Region}'
+            # https://docs.aws.amazon.com/ja_jp/systems-manager/latest/userguide/ssm-agent-minimum-s3-permissions.html
+Rules:
+  checkVPCs:
+    Assertions:
+      - Assert:
+          'Fn::EachMemberEquals':
+            - 'Fn::ValueOf':
+                - mySecurityGroups
+                - VpcId
+            - !Ref myVPC
+        AssertDescription: mySecurityGroups and myVPC must be same vpcid
+Conditions:
+  CreateS3GWInterface: !Equals 
+    - !Ref S3Interface
+    - Yes

@@ -1,0 +1,9 @@
+ Resources:
+  myNestedrootStack:
+    Type: 'AWS::CloudFormation::Stack'
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: https://buckets.s3.amazonaws.com/nest-test/2-15-3-EC2.yaml
+      Parameters:
+        EC2SecurityGroupIds: sg-07158f16b8da2dc2f
+        EC2SubnetId: subnet-0a26d8704b839ce99

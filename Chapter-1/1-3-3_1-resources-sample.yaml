@@ -1,0 +1,8 @@
+Resources:
+  myBucket1:
+    Type: 'AWS::S3::Bucket'
+  myBucket2:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: 
+        Fn::Sub: 'hello-clouformation-${AWS::AccountId}'

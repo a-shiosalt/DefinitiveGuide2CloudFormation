@@ -1,0 +1,8 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  myS3data:
+    Type: AWS::S3::Bucket
+    Properties:
+      Tags:
+        - Key: logbucketInfo
+          Value: '{{resolve:ssm:/cfn/ABCProj/LogBucket}}'

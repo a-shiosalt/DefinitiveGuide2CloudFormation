@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  EC2ImageId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+Resources:
+  myEC2script:
+    Type: AWS::EC2::Instance
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT3M
+    Properties:
+      ImageId: !Ref 'EC2ImageId'
+      InstanceType: t3.nano
+      UserData: !Base64
+        Fn::Sub: |
+         #!/bin/bash
+         yum -y update
+         yum -y install nginx
+         systemctl start  nginx.service
+         systemctl enable nginx.service
+         mv -f /usr/share/nginx/html/index.html /usr/share/nginx/html/index.html.org
+         echo \
+          "<HTML><HEAD> Hello </HEAD><BODY>this is a sample page</BODY></HTML>" \
+            > /usr/share/nginx/html/index.html
+         systemctl status nginx.service
+         /opt/aws/bin/cfn-signal -e $? \
+          --stack ${AWS::StackName} \
+          --resource myEC2script \
+          --region ${AWS::Region}
+
+  myEC2cloudinit1:
+    Type: AWS::EC2::Instance
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT3M
+    Properties:
+      ImageId: !Ref 'EC2ImageId'
+      InstanceType: t3.nano
+      UserData: !Base64
+        Fn::Sub: |
+          #cloud-config
+          package_upgrade: true
+          packages:
+           - nginx
+          runcmd:
+           - systemctl start nginx.service
+           - systemctl enable nginx.service
+           - mv -f /usr/share/nginx/html/index.html /usr/share/nginx/html/index.html.org
+           - ["sh", -c, 'echo "<HTML><HEAD> Hello </HEAD><BODY>this is a sample page</BODY></HTML>" > /usr/share/nginx/html/index.html' ]
+           - systemctl status nginx.service
+           - /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource myEC2cloudinit1  --region ${AWS::Region}

@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  mySGIDs:
+    Type: AWS::EC2::SecurityGroup::Id
+Resources:
+  myNestedVPCStack:
+    Type: 'AWS::CloudFormation::Stack'
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: https://bucket.s3.amazonaws.com/2-15-3-vpc.yaml
+  myEC2instance:
+    Type: AWS::EC2::Instance
+    DeletionPolicy: Retain
+    Properties:
+      ImageId: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}'
+      SecurityGroupIds: 
+        - !Ref mySGIDs
+      InstanceType: t3.nano
+      SubnetId: !GetAtt
+        - myNestedVPCStack
+        - Outputs.outSubnetPrivate1Id
+  myNestedEC2Stack:
+    Type: 'AWS::CloudFormation::Stack'
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: https://bucket.s3.amazonaws.com/2-15-3-EC2.yaml
+      Parameters:
+        EC2SecurityGroupIds: !Ref mySGIDs
+        EC2SubnetId: 
+          Fn::Sub: '${myNestedVPCStack.Outputs.outSubnetPrivate1Id}'

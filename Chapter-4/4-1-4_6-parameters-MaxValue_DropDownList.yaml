@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  PortNumToIng:
+    Type: Number
+    Default: 80
+    MinValue: 0
+    MaxValue: 65535
+  ProtocolIng:
+    Type: String
+    Default: tcp
+    AllowedValues:
+      - tcp
+      - udp
+      - icmp
+  IPLists:
+    Type: List<String>
+    AllowedValues:
+         - 192.168.10.0/24
+         - 192.168.11.0/24
+         - 192.168.12.0/24
+    Default: '192.168.10.0/24,192.168.12.0/24'
+    Description: 'IP range from where allowing access'
+  myVPC:
+    Type: AWS::EC2::VPC::Id
+Resources:
+  SecurityGroup01:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      VpcId: !Ref myVPC
+      GroupDescription: SecurityGroup01
+      SecurityGroupIngress:
+        - IpProtocol: !Ref ProtocolIng
+          ToPort: !Ref PortNumToIng
+          CidrIp: '192.168.0.0/24'
+  myIAMPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          Effect: Deny
+          Action: s3:*
+          Resource: '*'
+          Condition:
+            NotIpAddress:
+              aws:SourceIp:
+                Ref: IPLists
+Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E2015
+    comment1: 'E2015: Default should be a value within AllowedValues'
+    comment2: 'default List<String>'

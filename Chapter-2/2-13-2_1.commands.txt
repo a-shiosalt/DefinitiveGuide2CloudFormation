@@ -1,0 +1,16 @@
+# インポートを含む変更セット作成
+$ aws cloudformation create-change-set\
+ --stack-name  sample-stack002 --template-body file://s3new2.yaml \
+ --change-set-name newimport003 \
+ --import-existing-resources
+
+
+# 変更セットの内容確認
+$ aws cloudformation describe-change-set \
+ --change-set-name arn:aws:cloudformation:us-east-1:123456789012:changeSet/newimport003/a184415a-b235-4d8b-b325-735352ae3c23
+
+# 変更セットを実行
+$ aws cloudformation execute-change-set --stack-name  sample-stack002 --change-set-name newimport003
+
+ # スタック更新を確認
+$ aws cloudformation wait stack-update-complete  --stack-name sample-stack002

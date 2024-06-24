@@ -1,0 +1,20 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  EC2SubnetId:
+    Type: AWS::EC2::Subnet::Id
+  EC2SecurityGroupIds:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+  EC2ImageId:
+    Type: AWS::EC2::Image::Id
+  EC2InstanceType:
+    Type: String
+    Default: t4g.micro
+    AllowedValues: [t4g.nano,t4g.micro,t3.nano,t3a.nano]
+Resources:
+  myInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref EC2ImageId
+      InstanceType: !Ref EC2InstanceType
+      SubnetId: !Ref EC2SubnetId
+      SecurityGroupIds: !Ref EC2SecurityGroupIds

@@ -1,0 +1,40 @@
+Parameters:
+  myParameter:
+    Type: String
+    Default: param1
+  myVPC:
+    Type: AWS::EC2::VPC::Id
+Resources:
+  mySubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref myVPC
+      CidrBlock: 172.31.123.0/24
+  nullResource:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    Metadata:
+      Comment1: 
+        Fn::ImportValue: 
+          Fn::Sub: S3LogBucket-${AWS::Region}  # OK
+      Comment2: 
+        Fn::ImportValue:
+          Fn::Sub: S3LogBucket-${myParameter}  # OK
+      Comment3: 
+        Fn::ImportValue:
+          Fn::Sub: "VPC-${mySubnet.VpcId}"            # NG
+#     Comment4:
+#       Fn::ImportValue:
+#         Fn::ImportValue: S3LogBucket-param1         # NG
+#     Comment5:
+#       Fn::ImportValue: !Select [0, Fn::GetAZs: ""]  # NG
+
+Outputs:
+  sampleAZ1:
+    Value: !Select [0, Fn::GetAZs: ""]
+    Export:
+       Name: !Select [0, [a,b,c,d]]
+#      Name: !Select [0, Fn::GetAZs: ""]       # NG
+  ErrorExportAZ:
+    Value: !Select [0, Fn::GetAZs: ""]
+#   Export:
+#      Name: !Select [0, Fn::GetAZs: ""]        # NG

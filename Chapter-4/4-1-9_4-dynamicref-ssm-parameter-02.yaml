@@ -1,0 +1,144 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::LanguageExtensions
+Parameters:
+  AllowSubnets1:
+    Type: List<String>
+    Default: 192.168.10.0/24,192.168.11.0/24,192.168.12.0/24
+  AllowSubnets2:
+    Type: CommaDelimitedList
+    Default: 192.168.10.0/24,192.168.11.0/24,192.168.12.0/24
+  AllowSubnets3:
+    Type: List<String>
+    Default: 192.168.10.0/24,192.168.11.0/24,192.168.12.0/24
+    AllowedValues:
+      - 192.168.10.0/24
+      - 192.168.11.0/24
+      - 192.168.12.0/24
+      - 192.168.100.0/24
+      - 192.168.101.0/24
+      - 192.168.102.0/24
+      - ''
+    MaxLength: 18
+  AllowSubnets4:
+    Type: CommaDelimitedList
+    Default: 192.168.10.0/24,192.168.11.0/24,192.168.12.0/24
+    AllowedValues:
+      - 192.168.10.0/24
+      - 192.168.11.0/24
+      - 192.168.12.0/24
+      - 192.168.100.0/24
+      - 192.168.101.0/24
+      - 192.168.102.0/24
+      - ''
+  AllowNumber1:
+    Type: List<Number>
+    Default: 1,2,3,4
+    MaxValue: 7
+  AllowNumber2:
+    Type: CommaDelimitedList
+    Default: 1,2,3,4
+  AllowNumber3:
+    Type: List<Number>
+    Default: 1,2,3,4
+    AllowedValues:
+      - '1'
+      - '2'
+      - '3'
+      - '4'
+      - '5'
+      - '6'
+      - '7'
+  AllowNumber4:
+    Type: CommaDelimitedList
+    Default: 1,2,3,4
+    AllowedValues:
+      - '1'
+      - '2'
+      - '3'
+      - '4'
+      - '5'
+      - '6'
+      - '7'
+  MailList1:
+    Type: CommaDelimitedList
+    AllowedPattern: '[a-zA-Z0-9]+([-._a-zA-Z0-9]*[a-zA-Z0-9])*@([a-zA-Z0-9]+([-a-zA-Z0-9]*[a-zA-Z0-9])*\.)*[a-zA-Z0-9]+([-a-zA-Z0-9]*[a-zA-Z0-9])*\.[a-zA-Z]+'
+  MailList2:
+    Type: List<String>
+    AllowedPattern: '[^\s@]+@[^\s@]+\.[^\s@]+'
+  BucketNamePrefix:
+    Type: String
+  BucketComments:
+    Type: String
+Resources:
+  myS3Bucket1:
+    Type: AWS::S3::Bucket
+    Metadata:
+      comment:
+        Ref: BucketComments
+    Properties:
+      BucketName:
+        Fn::Sub: ${BucketNamePrefix}-aaaaaa-bbbbb-cccc-00987654321
+Outputs:
+  OutputAllowSubnets1Len:
+    Value:
+      Fn::Length:
+        Ref: AllowSubnets1
+  OutputAllowNumber1Len:
+    Value:
+      Fn::Length:
+        Ref: AllowNumber1
+  OutputAllowSubnets2Len:
+    Value:
+      Fn::Length:
+        Ref: AllowSubnets2
+  OutputAllowSubnets3Len:
+    Value:
+      Fn::Length:
+        Ref: AllowSubnets3
+  OutputAllowSubnets4Len:
+    Value:
+      Fn::Length:
+        Ref: AllowSubnets4
+  OutputAllowNumber2Len:
+    Value:
+      Fn::Length:
+        Ref: AllowNumber2
+  OutputMailList1Len:
+    Value:
+      Fn::Length:
+        Ref: MailList1
+  OutputMailList2Len:
+    Value:
+      Fn::Length:
+        Ref: MailList2
+  OutputAllowSubnets11v:
+    Value:
+      Fn::Select:
+        - 0
+        - Ref: AllowSubnets1
+  OutputAllowNumber11v:
+    Value:
+      Fn::Select:
+        - 0
+        - Ref: AllowNumber1
+  OutputAllowSubnets21v:
+    Value:
+      Fn::Select:
+        - 0
+        - Ref: AllowSubnets2
+  OutputAllowNumber21v:
+    Value:
+      Fn::Select:
+        - 0
+        - Ref: AllowNumber2
+  OutputMailList11v:
+    Value:
+      Fn::Select:
+        - 0
+        - Ref: MailList1
+  OutputMailList21v:
+    Value:
+      Fn::Select:
+        - 0
+        - Ref: MailList2
+

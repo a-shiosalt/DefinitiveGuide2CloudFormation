@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Mappings:
+  RegionAndEnvToAMIID:
+    ap-northeast-1:
+      x8664: ami-aa123456
+      arm64: ami-ab123456
+    us-east-1:
+      x8664: ami-ac123456
+      arm64: ami-ad123456
+    us-west-2:
+      x8664: ami-ae123456
+      arm64: ami-af123456
+Resources:
+  myEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t4g.small
+      ImageId: !FindInMap
+        - RegionAndEnvToAMIID
+        - !Ref AWS::Region
+        - arm64

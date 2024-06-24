@@ -1,0 +1,9 @@
+[
+    {
+        "ResourceType": "AWS::AutoScaling::AutoScalingGroup",
+        "LogicalResourceId": "myASG",
+        "ResourceIdentifier": {
+            "AutoScalingGroupName": "import-sample-myASG-WDR2J17T9W7T"
+        }
+    }
+]

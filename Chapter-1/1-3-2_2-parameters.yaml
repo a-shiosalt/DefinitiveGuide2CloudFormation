@@ -1,0 +1,14 @@
+Parameters:
+  myCidrIP:
+    Type: String
+    Default: 10.16.0.0
+  myCidrMask:
+    Type: Number
+    MinValue: 10
+    MaxValue: 22
+Resources:
+  myVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 
+        Fn::Sub: '${myCidrIP}/${myCidrMask}'

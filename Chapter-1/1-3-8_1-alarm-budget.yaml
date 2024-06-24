@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  myAlarmCostUSD:
+    Type: Number
+    Default: 40
+    Description: Alarm Cost.USD.
+  myEmail:
+    Type: String
+    AllowedPattern: >-
+      [a-zA-Z0-9]+[-._a-zA-Z0-9]*[a-zA-Z0-9]+.@[a-zA-Z0-9]+[-._a-zA-Z0-9]*[a-zA-Z0-9]+\.([a-zA-Z0-9]+[-._a-zA-Z0-9]*[a-zA-Z0-9]+\.)*([a-zA-Z0-9]+[-._a-zA-Z0-9]*[a-zA-Z0-9]+)
+Resources:
+  myBudget:
+    Type: AWS::Budgets::Budget
+    Properties:
+      Budget:
+        BudgetLimit:
+          Amount: !Ref myAlarmCostUSD
+          Unit: USD
+        TimeUnit: MONTHLY
+        BudgetType: COST
+      NotificationsWithSubscribers:
+        - Notification:
+            NotificationType: FORECASTED
+            ComparisonOperator: GREATER_THAN
+            Threshold: 100
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref myEmail
+        - Notification:
+            NotificationType: FORECASTED
+            ComparisonOperator: GREATER_THAN
+            Threshold: 200
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref myEmail
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            Threshold: 100
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref myEmail
+Outputs:
+  BudgetId:
+    Value: !Ref myBudget

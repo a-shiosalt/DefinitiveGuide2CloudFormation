@@ -1,0 +1,8 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  myVPC:
+    Type: AWS::EC2::VPC::Id
+Resources:
+  myNullRes:
+    Type: AWS::CloudFormation::WaitConditionHandle
+

@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  EC2ImageId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-windows-latest/Windows_Server-2022-Japanese-Full-Base
+Resources:
+  myEC2I01:
+    Type: AWS::EC2::Instance
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT10M
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId: !Ref myLaunchTemplate
+        Version: !GetAtt myLaunchTemplate.LatestVersionNumber
+      UserData: !Base64
+        Fn::Sub: |
+          <script>
+          echo Current date and time >> %SystemRoot%\Temp\test.log
+          echo %DATE% %TIME% >> %SystemRoot%\Temp\test.log
+          cfn-signal -e %ERRORLEVEL% --stack ${AWS::StackName} --resource myEC2I01  --region ${AWS::Region}
+          </script>
+  myLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Metadata:
+      Comment1: HttpTokens for IMDSv2
+    Properties:
+      LaunchTemplateData:
+        KeyName: !Ref myNewKeyPair
+        ImageId: !Ref EC2ImageId
+        InstanceType: t3.small
+        MetadataOptions: 
+          HttpTokens: required
+  myNewKeyPair:
+    Metadata:
+      Comment1: 'new keypaire is stored in SSM parameter store /ec2/keypair/{key_pair_id}'
+    Type: 'AWS::EC2::KeyPair'
+    Properties:
+      KeyName: !Sub "KeyPair-${AWS::StackName}"

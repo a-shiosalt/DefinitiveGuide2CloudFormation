@@ -1,0 +1,38 @@
+# StackSetのパラメータを上書きした設定内容は、Webマネジメントコンソールからは確認できません。
+# aws cloudformation describe-stack-instance コマンドで個別のスタックインスタンスの情報を確認します。
+
+#スタックセットの特定スタックの情報
+aws cloudformation describe-stack-instance \
+ --stack-set-name スタックセット名 \
+ --stack-instance-account AWSアカウントID\
+  --stack-instance-region リージョン
+
+#スタックセットのアカウントとリージョンの組み合わせ一覧(CSV)
+aws cloudformation list-stack-instances \
+  --stack-set-name スタックセット名 | \
+  jq -r '.Summaries[]|[.Account,.Region]|@csv'
+
+
+#コマンド組み合わせの例：スタックセットの全StackSetId,Account,Region,ParameterOverrides情報を表示
+ssname=スタックセット名
+aws cloudformation list-stack-instances --stack-set-name $ssname |\
+ jq -r \
+ '.Summaries[]|[.Account,.Region]|join(" --stack-instance-region ")'|\
+ xargs -L1 $ aws cloudformation describe-stack-instance \
+ --stack-set-name $ssname --stack-instance-account |\
+ jq -r \
+ '.StackInstance|{StackSetId,Account,Region,ParameterOverrides}'
+ssname=
+
+#委任された管理者でサービスマネージドを対象に実行する場合
+ssname=sampleStackName
+aws cloudformation list-stack-instances --stack-set-name $ssname \
+ --call-as DELEGATED_ADMIN |\
+ jq -r '.Summaries[]|[.Account,.Region]|join(" --stack-instance-region ")'|\
+ xargs -L1  $ aws cloudformation describe-stack-instance \
+ --call-as DELEGATED_ADMIN |\
+ --stack-set-name $ssname --stack-instance-account |\
+ jq -r '.StackInstance|{StackSetId,Account,Region,ParameterOverrides}'
+ssname=
+
+

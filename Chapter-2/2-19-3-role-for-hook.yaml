@@ -1,0 +1,24 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: |-
+  https://docs.aws.amazon.com/console/cloudformation/extensions-role
+Resources:
+  samplehookRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: 
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+                - resources.cloudformation.amazonaws.com
+                - hooks.cloudformation.amazonaws.com
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Sub '${AWS::AccountId}'
+              StringLike:
+                aws:SourceArn: !Sub 'arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:type/hook/*'
+Outputs:
+  AwsCommunityTimeStaticRole:
+    Value: !GetAtt samplehookRole.Arn

@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  myBucket1Name:
+    Type: String
+    MinLength: 3
+    MaxLength: 63
+Resources:
+  myS3Bucket1:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Ref: myBucket1Name

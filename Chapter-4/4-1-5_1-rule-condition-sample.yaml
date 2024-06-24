@@ -1,0 +1,101 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: [AWS::LanguageExtensions]
+Description: sample template
+Metadata:
+  Comment1: template comment1
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Select Your Environment
+        Parameters: [myEnv,ec2Processor,mySubnet,myVpcId]
+    ParameterLabels:
+      mySGYesNo:
+        default: 'Do you want to create Security Group ?'
+Parameters:
+  ec2Processor:
+    Type: String
+    AllowedValues: [x8664,arm64]
+  myEnv:
+    Type: String
+    AllowedValues: [dev,staging,prod]
+  mySubnet:
+    Type: AWS::EC2::Subnet::Id
+  myVpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: Select a VPC ID that matches the subnet ID
+  mySGYesNo:
+    Type: String
+    AllowedValues:
+      - 'Yes'
+      - 'No. I will use Default SecurityGroup.'
+    Default: 'Yes'
+Rules:
+  myRule1:
+    RuleCondition:
+      !Or 
+        - !Equals [!Ref myEnv,staging]
+        - !Equals [!Ref myEnv,prod]
+    Assertions:
+     - Assert: !Not [!Equals [!Ref ec2Processor, x8664]]
+       AssertDescription: 'CPU: x8664 is only for dev.'
+Mappings:
+  myMapRegion:
+    ap-northeast-1:
+      x8664: ami-012261b9035f8f938
+      arm64: ami-0eb1fceb47f85a62a
+      InstanceConnectIpRange: 3.112.23.0/29
+    ap-northeast-3:
+      x8664: ami-035322b237ca6d47a
+      arm64: ami-0572255bffbc2c994
+      InstanceConnectIpRange: 15.168.105.160/29
+  myMap2InstanceType:
+    dev:
+      x8664: t3.nano
+      arm64: t4g.nano
+Conditions:
+  myConditionDelpolicy: !Equals [!Ref myEnv,prod]
+  myConditionCreateSG: !Equals [!Ref mySGYesNo,'Yes']
+Resources:
+  mySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Condition: myConditionCreateSG
+    Properties:
+      GroupDescription: Security Group 
+      VpcId: !Ref myVpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !FindInMap
+            - myMapRegion
+            - !Ref AWS::Region
+            - InstanceConnectIpRange
+  myEC2:
+    Type: AWS::EC2::Instance
+    UpdateReplacePolicy: Delete
+    Metadata:
+      comment: deletionpolicy need AWS::LanguageExtensions.
+    DeletionPolicy: 
+      !If
+        - myConditionDelpolicy
+        - Retain
+        - Delete
+    Properties:
+      ImageId: !FindInMap
+        - myMapRegion
+        - !Ref AWS::Region
+        - !Ref ec2Processor
+      InstanceType: !FindInMap
+        - myMap2InstanceType
+        - !Ref myEnv
+        - !Ref ec2Processor
+        - DefaultValue: t4g.small
+      SubnetId: !Ref mySubnet
+      SecurityGroupIds:
+        - !If [myConditionCreateSG,!Ref mySecurityGroup,!Ref AWS::NoValue]
+Outputs:
+  myEC2InstancePrivateIp:
+    Value: !GetAtt myEC2.PrivateIp
+  mySGId:
+    Condition: myConditionCreateSG
+    Value: !Ref mySecurityGroup

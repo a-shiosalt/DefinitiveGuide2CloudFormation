@@ -1,0 +1,8 @@
+template-file-path: 2-14-3-VPCEndPoints.yaml
+parameters:
+  mySecurityGroups: sg-0cf73bd245c9ff853
+  myVPC: vpc-07d4bc315ce093c6d
+  S3Interface: Yes
+  S3InterfaceRouteTable: rtb-0ffd23f96afd0915c
+tags:
+  sampleTag: sample-sync

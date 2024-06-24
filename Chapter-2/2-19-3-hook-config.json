@@ -1,0 +1,9 @@
+{
+  "CloudFormationConfiguration": {
+    "HookConfiguration": {
+      "TargetStacks": "ALL",
+      "Properties": {},
+      "FailureMode": "FAIL"
+    }
+  }
+}

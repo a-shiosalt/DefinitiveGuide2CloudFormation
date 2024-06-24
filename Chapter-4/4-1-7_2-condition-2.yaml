@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  EnvType:
+    Description: Environment type.
+    Type: String
+    AllowedValues:
+      - prod
+      - test
+Conditions:
+  CreateProdResources:
+    Fn::Equals:
+      - !Ref 'EnvType'
+      - prod
+Resources:
+  S3bucket4All:
+    Type: AWS::S3::Bucket
+    Properties:
+      LifecycleConfiguration: 
+        Fn::If:
+          - CreateProdResources
+          - !Ref 'AWS::NoValue'
+          - Rules:
+              - Id: DeleteAfter1Month
+                Status: Enabled
+                ExpirationInDays: '32'
+  S3bucket4Prod:
+    Type: AWS::S3::Bucket
+    Condition: CreateProdResources

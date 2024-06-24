@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  myVPC:
+    Type: AWS::EC2::VPC::Id
+Resources:
+  TargetSG:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      VpcId: !Ref myVPC
+      GroupDescription: Security group allowing ingress all
+  InboundRule:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !GetAtt TargetSG.GroupId
+      IpProtocol: TCP
+      CidrIp: 0.0.0.0/0
+      FromPort: 0
+      ToPort: 0

@@ -1,0 +1,34 @@
+
+#事前準備：import用リソース作成
+aws cloudformation create-stack \
+    --stack-name resources-4-import\
+    --capabilities CAPABILITY_AUTO_EXPAND \
+    --template-body file://2-13-1_0-vpc-import.yaml \
+    --parameters \
+     ParameterKey=myDeletionPolicy,ParameterValue=Retain
+
+#事前準備：下記の出力を参考に、2-13-1_0-ResourcesToImport_vpc.txt を作成
+# aws cloudformation get-template-summary --stack-name resources-4-Import --query ResourceIdentifierSummaries
+# aws cloudformation list-stack-resources --stack-name resources-4-Import 
+# 補足
+#  VPCでInternet GW作成時に必要な TypeがAWS::EC2::VPCGatewayAttachmentのリソースはインポート未対応。
+#  作成済みのVPCには不要のため、インポート時はAWS::EC2::VPCGatewayAttachmentをテンプレートとresources-to-import に入れない。
+#  2-13-1_0-vpc-import.yaml は Parameters でIMPORTを選択すると該当リソースを作成しない。
+
+#事前準備：import用にスタック削除
+aws cloudformation delete-stack \
+    --stack-name resources-4-Import
+
+#import 変更セット作成
+aws cloudformation create-change-set \
+    --change-set-type IMPORT \
+    --stack-name import-samplex --change-set-name ImportChangeSet\
+    --resources-to-import  file://2-13-1_0-ResourcesToImport_vpc.txt \
+    --capabilities  CAPABILITY_AUTO_EXPAND \
+    --template-body file://2-13-1_0-vpc-import.yaml \
+    --parameters \
+     ParameterKey=myDeletionPolicy,ParameterValue=Delete \
+     ParameterKey=isImport,ParameterValue=Import
+
+#import 変更セット実行
+aws cloudformation execute-change-set --stack-name import-samplex --change-set-name ImportChangeSet

@@ -1,0 +1,48 @@
+Transform:  AWS::LanguageExtensions
+Parameters:
+  mySubnets4Endpoint:
+    Type:  List<AWS::EC2::Subnet::Id>
+    Description: >-
+      Subnets for EndPoints. only First Subnet is used for
+      ec2-Instance-Connect-Endpoint
+  mySecurityGroups:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    Description: SecurityGroups for Endpoints.all must in same VPC
+  myVPC:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC Id
+Rules:
+  checkVPCs:
+    Assertions:
+      - Assert:
+          Fn::EachMemberEquals:
+            - Fn::ValueOf:
+              - mySecurityGroups
+              - VpcId
+            - !Ref myVPC
+        AssertDescription: >-
+          mySecurityGroups and myVPC must be in same vpcid
+Resources:
+  Fn::ForEach::serviceloop:
+      - IdentifierName
+      - [ssmmessages,ec2messages,ssm]
+      - ${IdentifierName}InterfaceEndpoint:
+          Type: AWS::EC2::VPCEndpoint
+          Properties:
+            VpcEndpointType: Interface
+            ServiceName: 
+              Fn::Sub: 'com.amazonaws.${AWS::Region}.${IdentifierName}'
+            VpcId: !Ref myVPC
+            SubnetIds: 
+              Ref: mySubnets4Endpoint
+            SecurityGroupIds:
+              Ref: mySecurityGroups
+            PrivateDnsEnabled: true
+  ec2InstanceConnectEndpoint:
+    Type: AWS::EC2::InstanceConnectEndpoint
+    Properties:
+      PreserveClientIp: false
+      SecurityGroupIds: 
+        Ref: mySecurityGroups
+      SubnetId: 
+        Fn::Select: [0,Ref: mySubnets4Endpoint]

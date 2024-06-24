@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  myS3Bucket1:
+    Type: AWS::S3::Bucket
+Outputs:
+  ExpS3BucketName:
+    Description: Bucket name
+    Value:
+      Ref: myS3Bucket1
+    Export:
+      Name: S3LogBucket
+  OutputS3Arn:
+    Description: Bucket ARN
+    Value:
+      Fn::GetAtt:
+        - myS3Bucket1
+        - Arn
+  OutputS3DNS:
+    Description: Bucket IPv6 DNS name
+    Value:
+      Fn::GetAtt:
+        - myS3Bucket1
+        - DualStackDomainName

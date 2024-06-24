@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues: [sandbox,dev,staging,prod]
+  EC2SubnetId1:
+    Type: AWS::EC2::Subnet::Id
+  EC2SubnetId2:
+    Type: AWS::EC2::Subnet::Id
+  EC2SubnetId3:
+    Type: AWS::EC2::Subnet::Id
+Rules:
+  stagingNet:
+    RuleCondition: !Equals [!Ref Environment, prod]
+    Assertions:
+      - Assert:
+          Fn::Equals:
+            - Fn::ValueOf:
+              - EC2SubnetId2
+              - VpcId
+            - Fn::ValueOf:
+              - EC2SubnetId3
+              - VpcId
+        AssertDescription: Subnet2,3 vpcid is same
+      - Assert:
+          Fn::EachMemberEquals:
+            -  - Fn::ValueOf:
+                  - EC2SubnetId1
+                  - Tags.Department
+               - Fn::ValueOf:
+                  - EC2SubnetId2
+                  - Tags.Department
+               - Fn::ValueOf:
+                  - EC2SubnetId3
+                  - Tags.Department
+            - "IT"
+        AssertDescription: 'In prod, Subnet1,2,3 Department Tag = IT. '
+      - Assert:
+          !Not [Fn::EachMemberIn: [Fn::ValueOfAll: [AWS::EC2::Subnet::Id,Tags.Department] ,[DEV,TEST]] ]
+        AssertDescription: "All subnet must not in DEV,TEST. "
+  vpcCheck:
+    Assertions:
+      - Assert:
+          Fn::EachMemberEquals :
+            - Fn::ValueOfAll: 
+                - AWS::EC2::Subnet::Id
+                - VpcId
+            - Fn::ValueOf : 
+                - EC2SubnetId1
+                - VpcId
+        AssertDescription: 'you must select all subnets in same VPC .'
+  azCheck:
+    Assertions:
+      - Assert:
+          !Not 
+            - Fn::Equals:
+              - Fn::ValueOf : 
+                  - EC2SubnetId1
+                  - AvailabilityZone
+              - Fn::ValueOf : 
+                  - EC2SubnetId2
+                  - AvailabilityZone
+        AssertDescription: 'you must select subnet1 and 2 in different AZ'
+      - Assert:
+          !EachMemberEquals [!ValueOfAll [AWS::EC2::Subnet::Id,VpcId] ,string_to_match]
+Resources:
+  myEC2i0:
+    Type: AWS::EC2::Instance
+    Properties:
+         SubnetId: !Ref EC2SubnetId1
+         ImageId: ami-1234567
+  myEC2i1:
+    Type: AWS::EC2::Instance
+    Properties:
+         SubnetId: !Ref EC2SubnetId2
+         ImageId: ami-1234567
+  myEC2i2:
+    Type: AWS::EC2::Instance
+    Properties:
+         SubnetId: !Ref EC2SubnetId3
+         ImageId: ami-1234567

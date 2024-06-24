@@ -1,0 +1,37 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "Deletedays": {
+      "Type": "Number",
+      "Default": 100
+    },
+    "RuleNameHead": {
+      "Type": "String",
+      "Default": "Delete-Rule"
+    }
+  },
+  "Resources": {
+    "myS3Bucket1": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
+        },
+      "LifecycleConfiguration": {
+        "Rules": [
+          {
+            "Id": {
+              "Fn::Sub": "${RuleNameHead}-${Deletedays}"
+            },
+            "Status": "Enabled",
+            "ExpirationInDays": { "Ref": "Deletedays" }
+          }
+        ]
+      }
+    }
+  }
+  }
+}

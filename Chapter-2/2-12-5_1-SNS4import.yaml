@@ -1,0 +1,5 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  SNS001:
+    Type: 'AWS::SNS::Topic'
+    DeletionPolicy: Retain

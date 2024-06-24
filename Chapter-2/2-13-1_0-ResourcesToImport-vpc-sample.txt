@@ -1,0 +1,74 @@
+[
+    {
+        "ResourceType": "AWS::EC2::InternetGateway",
+        "LogicalResourceId": "EC2IntGW",
+        "ResourceIdentifier": {
+            "InternetGatewayId": "igw-096439307af13fafc"
+        }
+    },
+    {
+        "ResourceType": "AWS::EC2::SubnetRouteTableAssociation",
+        "LogicalResourceId": "EC2SntRTAS1",
+        "ResourceIdentifier": {
+            "Id": "rtbassoc-0eb9e4d7f87344f81"
+        }
+    },
+    {
+        "ResourceType": "AWS::EC2::SubnetRouteTableAssociation",
+        "LogicalResourceId": "EC2SntRTAS2",
+        "ResourceIdentifier": {
+            "Id": "rtbassoc-068d1fab84761e8b1"
+        }
+    },
+    {
+        "ResourceType": "AWS::EC2::RouteTable",
+        "LogicalResourceId": "RTPrivate",
+        "ResourceIdentifier": {
+            "RouteTableId": "rtb-0230bc04bab71e422"
+        }
+    },
+    {
+        "ResourceType": "AWS::EC2::RouteTable",
+        "LogicalResourceId": "RTPublic",
+        "ResourceIdentifier": {
+            "RouteTableId": "rtb-05fc84ffe7f67be0e"
+        }
+    },
+    {
+        "LogicalResourceId": "RouteIGW",
+        "ResourceType": "AWS::EC2::Route",
+        "ResourceIdentifier": {
+            "RouteTableId": "rtb-05fc84ffe7f67be0e",
+            "CidrBlock": "0.0.0.0/0"
+        }
+    },
+    {
+        "LogicalResourceId": "RouteNATGW",
+        "ResourceType": "AWS::EC2::Route",
+        "ResourceIdentifier": {
+            "RouteTableId": "rtb-0230bc04bab71e422",
+            "CidrBlock": "0.0.0.0/0"
+        }
+    },
+    {
+        "ResourceType": "AWS::EC2::Subnet",
+        "LogicalResourceId": "SubnetPrivate1",
+        "ResourceIdentifier": {
+            "SubnetId": "subnet-0d9c74208614a8bd7"
+        }
+    },
+    {
+        "ResourceType": "AWS::EC2::Subnet",
+        "LogicalResourceId": "SubnetPublic1",
+        "ResourceIdentifier": {
+            "SubnetId": "subnet-0171c31d9444198e1"
+        }
+    },
+    {
+        "ResourceType": "AWS::EC2::VPC",
+        "LogicalResourceId": "myVPC",
+        "ResourceIdentifier": {
+            "VpcId": "vpc-0576af5cfe25781fd"
+        }
+    }
+]

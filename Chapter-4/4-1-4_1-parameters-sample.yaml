@@ -1,0 +1,14 @@
+Parameters:
+  myBucketName:
+    Type: String
+Resources:
+  myBucket1:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Ref: myBucketName
+  myBucket1sub:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Fn::Sub: ${myBucketName}-sub
