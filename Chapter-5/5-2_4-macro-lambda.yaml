@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  myFunc:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: python3.12
+      InlineCode: !Sub |
+        def handler(event, context):
+          # for event sample
+          print(event)
+          data = event["fragment"]
+          # if event is full-template, add a WaitConditionHandle resource
+          if("Resources" in data):
+            Res = data["Resources"]
+            add_resource={"nullLogicName":{"Type":"AWS::CloudFormation::WaitConditionHandle"}}
+            Res.update(add_resource)
+            data.update({"Resources": Res})
+          #else if property "Input" exists, return lowerd and add "null".  
+          elif("Input" in event["params"]):
+            data = event["params"]["Input"].lower() + "-${AWS::AccountId}-${AWS::Region}"
+          #else change nothing
+          return {
+            "requestId": event['requestId'],
+            "status": "SUCCESS",
+            "fragment": data
+          }
+Outputs:
+  MacroLambdaARN:
+    Value: !GetAtt myFunc.Arn
+    Export:
+      Name: ADDnullARN

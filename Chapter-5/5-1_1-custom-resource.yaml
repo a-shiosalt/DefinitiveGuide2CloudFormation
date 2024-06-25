@@ -1,0 +1,11 @@
+
+Resources:
+  SampleResource:
+    Type: Custom::SampleRes
+    Properties:
+      ServiceToken:
+        Fn::ImportValue: CreateNullArn
+      SomeInfo: SomeValue01
+Outputs:
+  retId:
+    Value: !GetAtt SampleResource.Id

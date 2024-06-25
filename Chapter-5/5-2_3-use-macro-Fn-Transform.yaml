@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  myS3:
+    Type: AWS::S3::Bucket
+    Properties:
+      Tags:
+           - Key: Name
+             Value: aaa
+      BucketName:
+        Fn::Transform:
+          Name: ADDnull
+          Parameters:
+            Input: sampleyouraccountID

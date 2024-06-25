@@ -1,0 +1,5 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: ADDnull
+Resources:
+  myS3:
+    Type: AWS::S3::Bucket

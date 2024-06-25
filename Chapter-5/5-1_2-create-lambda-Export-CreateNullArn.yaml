@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  myFunc:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: python3.12
+      InlineCode: |
+        from urllib import request
+        from urllib import parse
+        import json
+        def handler(event, context):
+          # for event sample
+          print(event)
+          #set default data
+          res_data = {
+            "Status": "FAILED",
+            "RequestId": event['RequestId'],
+            "StackId": event['StackId'],
+            "LogicalResourceId": event['LogicalResourceId'],
+            "PhysicalResourceId": "phisical-" + event['LogicalResourceId'],
+            "Data": {"Id": "sample-data"}
+            }
+          if("RequestType" in event):
+            d_request = event["RequestType"]
+            match d_request:
+              case "Create":
+                status = "SUCCESS"
+                res_data.update({"Data": {"Id": "12345"}})
+              case "Update":
+                status = "SUCCESS"
+                res_data.update({"Data": {"Id": "22345"}})
+              case "Delete":
+                status = "SUCCESS"
+              case _:
+                res_data.update({"Reason": "request type error: " + d_request})
+          else:
+            res_data.update({"Reason": "request format error"})
+          #update status
+          res_data.update({"Status": status})
+          print(f"return data: {res_data}")
+          #send data to ResponseURL by PUT method.
+          req = request.Request(event['ResponseURL'],data=json.dumps(res_data).encode('ascii'),method='PUT')
+          with request.urlopen(req) as f:
+            print(f.read().decode('utf-8'))
+Outputs:
+  MacroLambdaARN:
+    Value: !GetAtt myFunc.Arn
+    Description: Use this Arn for Custom Resource
+    Export:
+      Name: CreateNullArn
