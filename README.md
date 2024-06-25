@@ -1,4 +1,4 @@
-# 詳解 CloudFormation》テンプレートファイル
+# 「詳解 CloudFormation」テンプレートファイル
 [<img src="https://book.mynavi.jp/files/topics/143664_ext_06_0.jpg" width="10%">](https://book.mynavi.jp/ec/products/detail/id=143664)
 <br>
 #### 書籍中で説明したテンプレートファイルを掲載しています。
