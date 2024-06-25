@@ -1,0 +1,37 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Transform": "AWS::LanguageExtensions",
+  "Parameters": {
+    "MarkdownText": {
+      "Type": "String",
+      "Default": "# Hello world"
+    }
+  },
+  "Resources": {
+    "Dashboard": {
+      "Type": "AWS::CloudWatch::Dashboard",
+      "Properties": {
+        "DashboardBody": {
+          "Fn::ToJsonString": {
+            "start": "-PT6H",
+            "periodOverride": "inherit",
+            "widgets": [
+              {
+                "type": "text",
+                "x": 0,
+                "y": 7,
+                "width": 3,
+                "height": 3,
+                "properties": {
+                  "markdown": {
+                    "Ref": "MarkdownText"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: 'AWS::Serverless-2016-10-31'
+Resources:
+  MySampleStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Events:
+        CWSchedule:
+          Type: Schedule
+          Properties:
+            Schedule: 'rate(30 minutes)'
+            Name: TestSchedule
+            Description: 30min schedule
+            Enabled: true
+      Definition:
+        StartAt: MyLambdaState
+        States:
+          MyLambdaState:
+            Type: Task
+            Resource: arn:aws:lambda:us-east-1:123456123456:function:my-sample-lambda-app
+            End: true
+      Tracing:
+        Enabled: true

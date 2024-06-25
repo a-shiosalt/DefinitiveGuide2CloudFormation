@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  TargetSG:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      VpcId: vpc-07e46b23f18458d6c
+      GroupDescription: Security group allowing ingress for icmp
+      SecurityGroupIngress:
+        - IpProtocol: icmp
+          FromPort: -1
+          ToPort: -1
+          SourceSecurityGroupId: !GetAtt TargetSG.GroupId

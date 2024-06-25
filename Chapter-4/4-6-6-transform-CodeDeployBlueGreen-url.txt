@@ -1,0 +1,8 @@
+AWS::CodeDeployBlueGreen transform
+  https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-aws-codedeploybluegreen.html
+
+Perform ECS blue/green deployments through CodeDeploy using AWS CloudFormation
+  https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/blue-green.html
+
+AWS CodeDeploy resource type reference
+  https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/AWS_CodeDeploy.html

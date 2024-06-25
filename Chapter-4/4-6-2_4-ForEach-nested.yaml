@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::LanguageExtensions
+Mappings:
+  indexName:
+    Public:
+      '0': 0
+      '1': 1
+      '2': 2
+      isPublic: true
+    Private:
+      '0': 3
+      '1': 4
+      '2': 5
+      isPublic: false
+Resources:
+  myVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 172.16.0.0/16
+      Tags:
+        - Value:
+            Fn::Sub: vpc-${AWS::StackName}
+          Key: Name
+  Fn::ForEach::PublicPrivatePrefix:
+    - Prefix
+    - - Public
+      - Private
+    - Fn::ForEach::Subnets:
+        - SubnetIndexNum
+        - - '0'
+          - '1'
+          - '2'
+        - mySubnet${SubnetIndexNum}${Prefix}:
+            Type: AWS::EC2::Subnet
+            Metadata:
+              cfn-lint:
+                config:
+                  ignore_checks:
+                    - E1019
+            Properties:
+              VpcId:
+                Ref: myVPC
+              AvailabilityZone:
+                Fn::Select:
+                  - Fn::Sub: ${SubnetIndexNum}
+                  - Fn::GetAZs:
+                      Ref: AWS::Region
+              MapPublicIpOnLaunch:
+                Fn::FindInMap:
+                  - indexName
+                  - Ref: Prefix
+                  - isPublic
+              CidrBlock:
+                Fn::Select:
+                  - Fn::FindInMap:
+                      - indexName
+                      - Ref: Prefix
+                      - Fn::Sub: ${SubnetIndexNum}
+                  - Fn::Cidr:
+                      - Fn::GetAtt:
+                          - myVPC
+                          - CidrBlock
+                      - 8
+                      - 8
+              Tags:
+                - Value:
+                    Fn::Sub: Subnet-${SubnetIndexNum}-${Prefix}
+                  Key: Name
+

@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: 'AWS::LanguageExtensions'
+Parameters:
+  paramBucketPrefixList:
+    Description: Bucket Name Prefix
+    Type: CommaDelimitedList
+    Default: 's3log,s3data,s3work'
+Resources:
+  Fn::ForEach::BucketPrefix1st:
+    - BucketPrefix
+    - !Ref paramBucketPrefixList
+    - ${BucketPrefix}:
+        Type: 'AWS::S3::Bucket'
+        Properties:
+          BucketName: !Sub ${BucketPrefix}-${AWS::AccountId}
+          LifecycleConfiguration:
+            Rules:
+              - Id: Example Glacier Rule
+                ExpirationInDays: 365
+                Status: Enabled
+                Transitions:
+                  - TransitionInDays: 30
+                    StorageClass: GLACIER

@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  RdsSG:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      VpcId: vpc-07e46b23f18458d6c
+      GroupDescription: allow rds connect from AtEx
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: '192.168.0.0/16'
+      Tags:
+        - Key: Name
+          Value: RdsSG
+  RdsIngressRule:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !GetAtt RdsSG.GroupId
+      IpProtocol: 'tcp'
+      FromPort: 3306
+      ToPort: 3306
+      SourceSecurityGroupId: !GetAtt AtExSG.GroupId
+
+  AtExSG:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      VpcId: vpc-07e46b23f18458d6c
+      GroupDescription: allow rds connect to RdsSG
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: '0.0.0.0/0'
+      Tags:
+        - Key: Name
+          Value: AtExSG
+
+  AtExEgressRule:
+    Type: 'AWS::EC2::SecurityGroupEgress'
+    Properties:
+      GroupId: !GetAtt AtExSG.GroupId
+      IpProtocol: tcp
+      FromPort: 3306
+      ToPort: 3306
+      DestinationSecurityGroupId: !GetAtt RdsSG.GroupId

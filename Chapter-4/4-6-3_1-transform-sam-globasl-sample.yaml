@@ -1,0 +1,47 @@
+Transform:
+  - AWS::LanguageExtensions
+  - AWS::Serverless-2016-10-31
+Globals:
+  Function:
+    Runtime: python3.11
+    Handler: index.handler
+
+Resources:
+  HelloWorldGet:
+    Type: AWS::Serverless::Function
+    Properties:
+      InlineCode: |
+        def handler(event, context):
+          return {'body': 'Hello World from GET', 'statusCode': 200}
+      Events:
+        requestGet:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: GET
+  HelloWorldPost:
+    Type: AWS::Serverless::Function
+    Properties:
+      InlineCode: |
+        def handler(event, context):
+          return {'body': 'Hello World from POST', 'statusCode': 200}
+      Events:
+        requestGet:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: POST
+Outputs:
+  APIUrl:
+    Value:  !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello'
+  LambdaGETArn:
+    Value: !GetAtt HelloWorldGet.Arn
+  LambdaPOSTArn:
+    Value: !GetAtt HelloWorldPost.Arn
+  IAMRoleGet:
+    Value: !GetAtt HelloWorldGetRole.Arn
+  IAMRolePost:
+    Value: !GetAtt HelloWorldPostRole.Arn
+    
+Metadata:
+  see: https://github.com/aws/serverless-application-model/blob/master/docs/internals/generated_resources.rst

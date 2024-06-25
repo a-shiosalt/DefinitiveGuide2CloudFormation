@@ -1,0 +1,11 @@
+{
+  "Comment": "wait 30 Seconds",
+  "StartAt": "WaitState",
+  "States": {
+    "WaitState": {
+      "Type": "Wait",
+      "Seconds": 30,
+      "End": true
+    }
+  }
+}

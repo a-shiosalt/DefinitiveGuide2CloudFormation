@@ -1,0 +1,38 @@
+Parameters:
+  bucketName:
+    Type: String
+    Description:  S3 bucket that's used for SNS event notification
+Resources:
+  mySNSTopic:
+    Type: AWS::SNS::Topic
+  mySNSTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref mySNSTopic
+      PolicyDocument:
+        Id: MyTopicPolicy
+        Version: '2012-10-17'
+        Statement:
+          - Sid: allow-s3
+            Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action: sns:Publish
+            Resource: !Ref mySNSTopic
+            Condition:
+              ArnLike:
+                'aws:SourceArn': !Sub arn:aws:s3:*:*:${bucketName}
+              StringEquals:
+                'aws:SourceAccount': !Ref AWS::AccountId
+
+  myBucket:
+    Type: AWS::S3::Bucket
+    DependsOn:
+         - mySNSTopicPolicy
+    Properties:
+      BucketName: !Ref bucketName
+      NotificationConfiguration:
+        TopicConfigurations:
+          - Event: 's3:ObjectCreated:*'
+            Topic: !Ref mySNSTopic

@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: 'AWS::Serverless-2016-10-31'
+Resources:
+  myDynamoDB:
+    Type: AWS::Serverless::SimpleTable
+  mySAMFunct:
+    Type: AWS::Serverless::Function
+    Connectors:
+      myFunctionToTableConnector:
+        Properties:
+          Destination:
+            Id: myDynamoDB
+          Permissions: [Read,Write]
+    Properties:
+      Runtime: python3.10
+      Handler: index.handler
+      CodeUri: s3://BUCKETNAME/index.py.zip

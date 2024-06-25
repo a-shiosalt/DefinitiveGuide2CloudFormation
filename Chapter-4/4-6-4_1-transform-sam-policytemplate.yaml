@@ -1,0 +1,31 @@
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  myS3Bucket:
+    Type: AWS::S3::Bucket
+  myFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Policies:
+        - S3WritePolicy:
+            BucketName: {Ref: myS3Bucket} 
+        - DynamoDBCrudPolicy:
+            TableName: {Ref: myTable}
+      Runtime: nodejs16.x
+      Handler: index.handler
+      InlineCode: |
+        const AWS = require('aws-sdk');
+        exports.handler = async (event, context) => {
+          const docClient = new AWS.DynamoDB.DocumentClient();
+          await docClient.put({ 
+            TableName: process.env.TABLE_NAME, 
+            Item: {
+              id: context.awsRequestId,
+              event: JSON.stringify(event)
+            }
+          }).promise();
+        };
+      Environment:
+        Variables:
+          TABLE_NAME: {Ref: myTable}
+  myTable:
+    Type: AWS::Serverless::SimpleTable

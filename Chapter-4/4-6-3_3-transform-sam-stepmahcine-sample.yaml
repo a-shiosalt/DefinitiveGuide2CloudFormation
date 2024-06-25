@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: 'AWS::Serverless-2016-10-31'
+Resources:
+  MySampleStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Events:
+        CWSchedule:
+          Type: Schedule
+          Properties:
+            Schedule: 'rate(30 minutes)'
+            Name: TestSchedule
+            Description: 30min schedule
+            Enabled: true
+      DefinitionUri: s3://BUCKETNAME/4-6-4-my_state_machine.asl.json
+      Tracing:
+        Enabled: true
+

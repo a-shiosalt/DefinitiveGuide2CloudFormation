@@ -1,0 +1,22 @@
+Transform: AWS::LanguageExtensions
+Description: This template file is erroneous and cannot be used.
+Parameters:
+  paramResions:
+    Type: List<AWS::EC2::AvailabilityZone::Name>
+Resources:
+  'Fn::ForEach::PrefixSubnetResources':
+  - Prefix
+  - [Transit, Public]
+  - 'Nacl${Prefix}Subnet':
+      Type: 'AWS::EC2::NetworkAcl'
+      Properties:
+        VpcId: !Ref 'VPC'
+    'Fn::ForEach::SuffixLoopInner':
+    - Suffix
+    - !Ref paramResions
+    - '${Prefix}Subnet&{Suffix}':  # &{Suffix}
+        Type: 'AWS::EC2::Subnet'
+        Properties:
+          VpcId: !Ref 'VPC'  #Error. need CIDR block or IPAM 
+  VPC:
+    Type: 'AWS::EC2::VPC'

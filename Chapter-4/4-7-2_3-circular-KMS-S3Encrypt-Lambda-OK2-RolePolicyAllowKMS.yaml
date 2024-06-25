@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  myKMS:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: 2012-10-17
+        Id: policy1
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: kms:*
+            Resource: '*'
+
+  myLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub lambda-role-${AWS::StackName}
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: lambda-write-2-s3
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: EnablePutObject2Bcket
+                Effect: Allow
+                Action: s3:PutObject
+                Resource: !Sub arn:aws:s3:::${myEncryptedS3Bucket}/*
+              - Sid: EnableLambdaRolePermissions
+                Effect: Allow
+                Resource: !GetAtt myKMS.Arn
+                Action:
+                  - kms:Encrypt
+                  - kms:GenerateDataKey
+                  
+  myLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub SaveEvent2S3-${AWS::StackName}
+      Runtime: python3.9
+      Handler: index.lambda_handler
+      Role: !GetAtt myLambdaRole.Arn
+      Code:
+        ZipFile: !Sub |
+          import json
+          import boto3
+          from datetime import datetime
+          s3 = boto3.client('s3')
+          def lambda_handler(event, context):
+              file_contents = json.dumps(event)
+              bucket = "${myEncryptedS3Bucket}"
+              key = 'event-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '.json'
+              response = s3.put_object(Body=file_contents, Bucket=bucket, Key=key)
+              print("Lambda function end. function name:", context.function_name)
+              return response
+
+  myKMSalias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}
+      TargetKeyId: !Ref myKMS
+
+  myEncryptedS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'enc-lambda-${AWS::StackName}-${AWS::AccountId}-${AWS::Region}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'aws:kms'
+              KMSMasterKeyID: !Ref myKMSalias
+            BucketKeyEnabled: true
+

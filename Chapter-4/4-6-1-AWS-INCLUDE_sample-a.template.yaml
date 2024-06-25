@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  IAMPOLICY1:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: s3://BUCKETNAME/4-6-1-include-policy.json
+  myS3Bucket:
+    Fn::Transform:
+      Name: AWS::Include
+      Parameters:
+        Location: s3://BUCKETNAME/4-6-1-include-resource.yaml
