@@ -1,9 +1,10 @@
 # 「詳解 CloudFormation」テンプレートファイル
 [<img src="https://book.mynavi.jp/files/topics/143664_ext_06_0.jpg" width="10%">](https://book.mynavi.jp/ec/products/detail/id=143664)
 <br>
+[本の正誤情報と修正PDFはこちら](https://book.mynavi.jp/supportsite/detail/9784839985882.html)
+
 #### 書籍中で説明したテンプレートファイルを掲載しています。
-####
-<br>:grey_exclamation: ファイル名に-NGや-Noを含むテンプレートは動作しません。説明のために動作しないファイルを掲載しています。
+:grey_exclamation: ファイル名に-NGや-Noを含むテンプレートは動作しません。説明のために動作しないファイルを掲載しています。
 <br>:grey_exclamation: ファイル名にsample を含む場合、多くは一部記載の修正が必要です。
    例えばBUCKETNAMEを実際のバケット名に書き換える必要があります。
 
@@ -380,5 +381,5 @@
 	8-7 AWS::Serverless::Connector Source/Destination対応表	718
 	8-8 SAM ポリシーテンプレートとプレースホルダー値一覧	721
 	8-9 ドキュメントURL	725
- 一覧表	727
-	索引	728
+	    一覧表	727
+     	    索引	728
