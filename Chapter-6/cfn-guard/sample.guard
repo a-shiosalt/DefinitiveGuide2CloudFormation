@@ -1,0 +1,52 @@
+let ec2_instances = Resources.*[Type == 'AWS::EC2::Instance'].Properties
+
+rule Pass_And
+  when %ec2_instances !empty {
+    %ec2_instances.ImageId exists
+    %ec2_instances.InstanceType exists
+  }
+
+rule Fail_NotAll
+  when %ec2_instances !empty {
+	%ec2_instances.ImageId is_string
+	#some ImageId use Ref
+  }
+
+rule Fail_Or
+  when %ec2_instances !empty {
+	%ec2_instances.ImageId is_struct OR
+	%ec2_instances.ImageId is_string
+  }
+
+rule Pass_Or_1
+  when %ec2_instances !empty {
+	%ec2_instances {
+	  ImageId is_string OR
+	  ImageId is_struct
+	}
+  }
+rule Pass_Or_2
+  when %ec2_instances !empty {
+	some %ec2_instances.ImageId is_struct OR
+	some %ec2_instances.ImageId is_string
+  }
+
+rule Query_1 {
+    Resources.*[Properties.BucketName !empty].Type == 'AWS::S3::Bucket'
+}
+
+rule Query_2
+  when Resources.*[Properties.BucketName !empty] !empty {
+    Resources.*[Properties.BucketName !empty].Type == 'AWS::S3::Bucket'
+}
+
+let bn = Resources.*[Properties.BucketName !empty]
+rule Query_3
+  when %bn !empty {
+    %bn.Type == 'AWS::S3::Bucket'
+}
+
+rule Skip_chk
+  when %ec2_instances empty {
+    hoge empty
+  }
