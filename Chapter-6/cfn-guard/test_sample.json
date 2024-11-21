@@ -1,0 +1,56 @@
+[
+    {
+        "name": "MyTest1",
+        "input": {
+            "AWSTemplateFormatVersion": "2010-09-09",
+            "Parameters": {
+                "EC2ImageId1": {
+                    "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
+                    "Default": "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+                }
+            },
+            "Resources": {
+                "myEC2d1": {
+                    "Type": "AWS::EC2::Instance",
+                    "Properties": {
+                        "ImageId": {
+                            "Ref": "EC2ImageId1"
+                        },
+                        "InstanceType": "t3.nano"
+                    }
+                },
+                "myEC2Master1": {
+                    "Type": "AWS::EC2::Instance",
+                    "Properties": {
+                        "ImageId": "ami-12345678",
+                        "InstanceType": "t3.micro"
+                    }
+                },
+                "myS3s1": {
+                    "Type": "AWS::S3::Bucket"
+                },
+                "myS3s2": {
+                    "Type": "AWS::S3::Bucket",
+                    "Properties": {
+                        "BucketName": {
+                            "Fn::Sub": "sample01-${AWS::AccountId}"
+                        }
+                    }
+                }
+            }
+        },
+        "expectations": {
+            "rules": {
+                "Pass_And": "PASS",
+                "Pass_Or_1": "PASS",
+                "Pass_Or_2": "PASS",
+                "Query_1": "PASS",
+                "Query_2": "PASS",
+                "Query_3": "PASS",
+                "Skip_chk": "SKIP",
+                "Fail_Or": "FAIL",
+                "Fail_NotAll": "FAIL"
+            }
+        }
+    }
+]
